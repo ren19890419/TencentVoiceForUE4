@@ -23,7 +23,8 @@ void UVoiceClient::Tick(float DeltaTime)
 
 FORCEINLINE bool UVoiceClient::IsTickable() const
 {
-	return bRoomStatus;
+	//return bRoomStatus;
+	return true;
 }
 
 FORCEINLINE TStatId UVoiceClient::GetStatId() const
@@ -53,8 +54,8 @@ void UVoiceClient::AddJoinedRoomName(const FString & RoomName)
 		OpenMic();
 		OpenSpeaker();
 
-		SetMicVolume((int)(8000));
-		SetSpeakerVolume((int)(0xffff));
+		SetMicVolume(1000);
+		SetSpeakerVolume(0xffff);
 	}
 
 	if (!JoinedRoomName.Contains(RoomName))
@@ -157,6 +158,18 @@ void UVoiceClient::JoinNationalRoom(const FString & RoomName, EVoiceMemberRole M
 	{
 		UE_LOG(TencentVoicePlugin, Display, TEXT("JoinNationalRoom return code %d!"), static_cast<int32>(m_voiceengine->JoinNationalRoom(TCHAR_TO_ANSI(*RoomName), static_cast<gcloud_voice::IGCloudVoiceEngine::GCloudVoiceMemberRole>(MemberRole), msTimeout)));
 	}
+}
+
+bool UVoiceClient::TestMic()
+{
+	UE_LOG(TencentVoicePlugin, Display, TEXT("MicLevel return code %d!"), m_voiceengine->GetMicLevel(true));
+	UE_LOG(TencentVoicePlugin, Display, TEXT("TestMic return code %d!"), static_cast<int32>(m_voiceengine->TestMic()));
+
+	if (gcloud_voice::GCLOUD_VOICE_SUCC == m_voiceengine->TestMic())
+	{
+		return true;
+	}
+	return false;
 }
 
 void UVoiceClient::OpenMic()

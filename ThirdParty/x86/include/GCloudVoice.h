@@ -21,7 +21,11 @@
 		#define GCLOUD_VOICE_API __declspec(dllimport)
 	#endif
 #else
-	#define GCLOUD_VOICE_API
+	#if defined __ANDROID__
+		#define GCLOUD_VOICE_API __attribute__ ((visibility ("default")))
+	#else
+		#define GCLOUD_VOICE_API
+	#endif
 #endif
 
 namespace gcloud_voice
@@ -572,6 +576,16 @@ namespace gcloud_voice
 		return 0 or 1;  0 : no howling   1: have howling
 	*/
 		virtual int  GetHwState() = 0;
+        
+        
+        /**
+         * Set if it is datafree.
+         *
+         * @param enable: true enable datafree
+         * @return : if success return GCLOUD_VOICE_SUCC, failed return other errno @see GCloudVoiceErrno
+         * @see : GCloudVoiceErrno
+         */
+        virtual GCloudVoiceErrno SetDataFree(bool enable) = 0;
 		
 	};
     

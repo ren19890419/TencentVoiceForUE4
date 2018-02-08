@@ -774,6 +774,15 @@ enum SoundEffects
 
 -(enum GCloudVoiceErrno) SetBitRate:(int)bitrate;
 
+/**
+ * Set if it is datafree.
+ *
+ * @param enable: true enable datafree
+ * @return : if success return GCLOUD_VOICE_SUCC, failed return other errno @see GCloudVoiceErrno
+ * @see : GCloudVoiceErrno
+ */
+-(enum GCloudVoiceErrno) SetDataFree:(bool) enable;
+
 /*
 * get howling state
 * @return : if howling happen return 1,else return 0

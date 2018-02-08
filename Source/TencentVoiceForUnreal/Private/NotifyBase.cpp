@@ -28,6 +28,8 @@ void UNotifyBase::OnJoinRoom(GCloudVoiceCompleteCode code, const char *roomName,
 		{
 			TCallback->ExecuteIfBound();
 		}
+
+		VoiceClient->TestMic();
 	}
 	// If the first voice room joins failed, and then turn off voice client tick.
 	else

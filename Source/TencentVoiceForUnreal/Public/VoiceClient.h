@@ -155,6 +155,14 @@ public:
 		void JoinNationalRoom(const FString& RoomName, EVoiceMemberRole MemberRole, int32 msTimeout);
 
 	/**
+	 * Test wheather microphone is available
+	 *
+	 * @return If success return true, means have detect micphone device, failed return false.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Voice Plug-in")
+		bool TestMic();
+
+	/**
 	 * Open Microphone
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
@@ -190,7 +198,7 @@ public:
 	/**
 	 * Set voice client Mic volume
 	 *
-	 * @param vol Windows value range[0,8000].
+	 * @param vol Windows value range[0,1000].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
 		void SetMicVolume(int vol);
