@@ -110,12 +110,7 @@ public class TencentVoiceForUnreal : ModuleRules
             Directory.CreateDirectory(binariesDir);
         }
 
-        // If the Third-party SDK of this plug-in updated, so the .dll file under the Binaries directory should be updated.
-        if (File.Exists(Path.Combine(binariesDir, filename)))
-        {
-            File.Delete(Path.Combine(binariesDir, filename));
-        }
-
+        // If the Third-party SDK of this plug-in updated, then the GCloudVoice.dll file under the Binaries directory should be covered to update.
         try
         {
             File.Copy(Filepath, Path.Combine(binariesDir, filename), true);
