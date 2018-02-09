@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "GCloudVoice.h"
+#include "TypeExtension.h"
 #include "Runtime/Engine/Public/Tickable.h"
 #include "VoiceClient.generated.h"
 
@@ -13,31 +14,6 @@ class UNotifyBase;
 /**
  * 
  */
-
-UENUM(BlueprintType)
-enum class EVoiceMemberRole : uint8
-{
-	/* member who can open microphone and say */
-	Anchor = 1,
-	/* member who can only hear anchor's voice */
-	Audience,
-};
-
-UENUM(BlueprintType)
-enum class EVoiceMode : uint8
-{
-	/* realtime mode for TeamRoom or NationalRoom */
-	RealTime = 0,
-	/* voice message mode */
-	Messages,
-	/* speach to text mode */
-	Translation,
-	/* real-time speach to text mode */
-	RSTT,
-	/* high quality realtime voice, will cost more network traffic */
-	HIGHQUALITY = 4,
-};
-
 UCLASS()
 class TENCENTVOICEFORUNREAL_API UVoiceClient : public UObject, public FTickableGameObject
 {

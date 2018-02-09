@@ -110,16 +110,19 @@ public class TencentVoiceForUnreal : ModuleRules
             Directory.CreateDirectory(binariesDir);
         }
 
-        if (!File.Exists(Path.Combine(binariesDir, filename)))
+        // If the Third-party SDK of this plug-in updated, so the .dll file under the Binaries directory should be updated.
+        if (File.Exists(Path.Combine(binariesDir, filename)))
         {
-            try
-            {
-                File.Copy(Filepath, Path.Combine(binariesDir, filename), true);
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine("Copy dll exception, ", e.ToString());
-            }
+            File.Delete(Path.Combine(binariesDir, filename));
+        }
+
+        try
+        {
+            File.Copy(Filepath, Path.Combine(binariesDir, filename), true);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Copy dll exception, ", e.ToString());
         }
     }
 }

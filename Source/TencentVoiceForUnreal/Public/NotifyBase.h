@@ -7,33 +7,15 @@
 #include "UObject/NoExportTypes.h"
 #include "GCloudVoice.h"
 #include "VoiceClient.h"
+#include "TypeExtension.h"
 #include "TencentVoiceForUnreal.h"
 #include "NotifyBase.generated.h"
 
 using namespace gcloud_voice;
 
-DECLARE_DYNAMIC_DELEGATE(FEventCallback);
-
 /**
  * 
  */
-UENUM()
-enum class EFunctionName : uint8
-{
-	EOnJoinRoom				UMETA(DisplayName="OnJoinRoom"),
-	EOnStatusUpdate			UMETA(DisplayName="OnStatusUpdate"),
-	EOnQuitRoom				UMETA(DisplayName="OnQuitRoom"),
-	EOnMemberVoice			UMETA(DisplayName="OnMemberVoice"),
-	EOnUploadFile			UMETA(DisplayName="OnUploadFile"),
-	EOnDownloadFile			UMETA(DisplayName="OnDownloadFile"),
-	EOnPlayRecordedFile		UMETA(DisplayName="OnPlayRecordedFile"),
-	EOnApplyMessageKey		UMETA(DisplayName="OnApplyMessageKey"),
-	EOnSpeechToText			UMETA(DisplayName="OnSpeechToText"),
-	EOnRecording			UMETA(DisplayName="OnRecording"),
-	EOnStreamSpeechToText	UMETA(DisplayName="OnStreamSpeechToText"),
-	EOnRoleChanged			UMETA(DisplayName="OnRoleChanged")
-};
-
 UCLASS(BlueprintType)
 class TENCENTVOICEFORUNREAL_API UNotifyBase : public UObject, public IGCloudVoiceNotify
 {
@@ -42,6 +24,11 @@ class TENCENTVOICEFORUNREAL_API UNotifyBase : public UObject, public IGCloudVoic
 public:
 	UNotifyBase(const FObjectInitializer& ObjectInitializer);
 	virtual ~UNotifyBase();
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnJoinRoom, EGCloudVoiceCompleteCode, code, FString, roomName, int32, memberID);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnQuitRoom, EGCloudVoiceCompleteCode, code, FString, roomName);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnMemberVoice, FString, roomName, int32, member, int32, status);
 
 public:
 	virtual void OnJoinRoom(GCloudVoiceCompleteCode code, const char *roomName, int memberID) override;
@@ -66,33 +53,22 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Voice Plug-in")
 		static UNotifyBase* GetNotifyInstance();
 
-	/**
-	 * Set event for specify function name, when the callback function was called and successed, this event will be called
-	 *
-	 * @param FunctionName The function that you want to set event
-	 * @param Delegate The event you want to set
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void SetEventForFunctionName(EFunctionName FunctionName, UPARAM(DisplayName = "Event") FEventCallback Delegate);
-
-	/**
-	 * Remove event for function name
-	 *
-	 * @param FunctionName The function thar you want to remove event
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		
-		void RemoveEventForFunctionName(EFunctionName FunctionName);
-
 	//UFUNCTION(BlueprintPure, Category = "Voice Plug-in")
 	//	// New a notify instance (singleton object)
 	//	static UNotifyBase* NewNotifyInstance(TSubclassOf<UNotifyBase> NotifyClass);
 
-protected:
+private:
 	// The UNotifyBase instance handle (singleton object)
 	static UNotifyBase* NotifyInstance;
-	// Callback event map
-	TMap<EFunctionName, FEventCallback> CallbackMap;
 	// The VoiceClient instance handle
 	class UVoiceClient* VoiceClient;
+
+	UPROPERTY(BlueprintAssignable, Category = "Voice Plug-in")
+		FOnJoinRoom OnJoinRoomCompleted;
+
+	UPROPERTY(BlueprintAssignable, Category = "Voice Plug-in")
+		FOnQuitRoom OnQuitRoomCompleted;
+
+	UPROPERTY(BlueprintAssignable, Category = "Voice Plug-in")
+		FOnMemberVoice OnMemberVoiceCompleted;
 };
