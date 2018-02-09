@@ -28,6 +28,9 @@ public:
 	virtual TStatId GetStatId() const override;
 
 public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOutputLog, FString, LogMsg);
+
+public:
 	/**
 	 * Add a room name to JoinedRoomName
 	 *
@@ -213,4 +216,7 @@ private:
 	bool bRoomStatus;
 	// This array storage the voice client has joined room name
 	TArray<FString> JoinedRoomName;
+
+	UPROPERTY(BlueprintAssignable, Category = "Voice Plug-in")
+		FOutputLog OutputLog;
 };
