@@ -28,9 +28,6 @@ public:
 	virtual TStatId GetStatId() const override;
 
 public:
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOutputLog, FString, LogMsg);
-
-public:
 	/**
 	 * Add a room name to JoinedRoomName
 	 *
@@ -67,137 +64,194 @@ public:
 	 * @param appID your game ID from gcloud.qq.com
 	 * @param appKey your game key from gcloud.qq.com
 	 * @param openID player's openID from QQ or Wechat. or a unit role ID.
-	 * @return successed return true, otherwise return false
+	 * @return if m_voiceengine is nullptr return -1, if success return 0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		bool SetAppInfo(const FString& appID, const FString& appKey, const FString& OpenID);
+		int32 SetAppInfo(const FString& appID, const FString& appKey, const FString& OpenID);
 
-	/**
+	 /**
 	 * Init the voice engine.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void InitVoiceEngine();
-
-	/**
-	 * Set the mode for engine
 	 *
-	 * @param VoiceMoede Mode to set
+	 * @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void SetMode(EVoiceMode VoiceMode);
+		int32 InitVoiceEngine();
 
 	/**
+	* Set the notify to engine.
+	*
+	* @param NotifyInstance the notify
+	* @return if NotifyInstance is nullptr return -1, if success return 0, failed return other errno @see GCloudVoiceErrno
+	* @see : GCloudVoiceErrno
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
+		int32 SetNotify(UNotifyBase* NotifyInstance);
+
+	 /**
+	 * Set the mode for engine.
+	 *
+	 * @param mode: mode to set
+	 *              RealTime:    realtime mode for TeamRoom or NationalRoom
+	 *              Messages:    voice message mode
+	 *              Translation: speach to text mode
+	 *				RSTT:		 real-time speach to text mode
+	 *				HIGHQUALITY: high quality realtime voice, will cost more network traffic
+	 * @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
+		int32 SetMode(EVoiceMode VoiceMode);
+
+	/**
+	* enable a client join in multi rooms.
+	*
+	* this may cause higher bitrate
+	*
+	* @param bEnable ture for open and false for close
+	* @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
+		int32 EnableMultiRoom(bool bEnable);
+
+	/**
+	* Join in team room.
+	*
+	* @param RoomName the room to join, should be less than 127byte, composed by alpha.
+	* @param msTimeout time for join, it is micro second. value range[5000, 60000]
+	* @return if already joined this room return -1, if success return 0, failed return other errno @see GCloudVoiceErrno
+	* @see : GCloudVoiceErrno
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
+		int32 JoinTeamRoom(const FString& RoomName, int32 msTimeout);
+
+	/**
+	* Join in a national room.
+	*
+	* @param RoomName the room to join, should be less than 127byte, composed by alpha.
+	* @param role a GCloudVoiceMemberRole value illustrate wheather can send voice data.
+	* @param msTimeout time for join, it is micro second. value range[5000, 60000]
+	* @return if already joined this room return -1, if success return 0, failed return other errno @see GCloudVoiceErrno
+	* @see : GCloudVoiceErrno
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
+		int32 JoinNationalRoom(const FString& RoomName, EVoiceMemberRole MemberRole, int32 msTimeout);
+
+	/**
+	* Quit the voice room(Do not distinguish team room or National room).
+	*
+	* @param RoomName the room to join, should be less than 127byte, composed by alpha.
+	* @param msTimeout time for quit, it is micro second.value range[5000, 60000]
+	* @return if had not joined the room return -1, if success return 0, failed return other errno @see GCloudVoiceErrno
+	* @see : GCloudVoiceErrno
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
+		int32 QuitRoom(const FString& RoomName, int32 msTimeout);
+
+	 /**
 	 * Set the server address, just used for foreign game,such as Korea, Europe...
-	 * @param ServerAddr url of server
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void SetServerInfo(const FString& ServerAddr);
-
-	/**
-	 * On application pause
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void OnPause();
-
-	/**
-	 * On application resume
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void OnResume();
-
-	/**
-	 * Set the Notify to engine.
 	 *
-	 * @param NotifyInstance The notify pointer
-	 * @return successed return true, otherwise return false.
+	 * @param ServerAddr URL of server
+	 * @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		bool SetNotify(UNotifyBase* NotifyInstance);
+		int32 SetServerInfo(const FString& ServerAddr);
 
-	/**
-	 * Join team room. if successful, will callback notify OnJoinRoom function
+	 /**
+	 * The Application's Pause.
 	 *
-	 * @param RoomName the voice room name that you want to join
-	 * @param msTimeout time for join, it is micro second. value range[5000, 60000]
+	 * When your app pause such as goto backend you should invoke this
+	 * @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void JoinTeamRoom(const FString& RoomName, int32 msTimeout);
+		int32 OnPause();
 
 	/**
-	 * Join national room. if successful, will callback notify OnJoinRoom function
-	 *
-	 * @param RoomName the voice room name that you want to join
-	 * @param MemberRole The role of a member, the audience can only listen to the voice and can not send voice, and the Anchor can both send and listen to the voice.
-	 * @param msTimeout time for join, it is micro second. value range[5000, 60000]
-	 */
+	* The Application's Resume.
+	*
+	* When your app reuse such as come back from  backend you should invoke this
+	* @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	* @see : GCloudVoiceErrno
+	*/
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void JoinNationalRoom(const FString& RoomName, EVoiceMemberRole MemberRole, int32 msTimeout);
+		int32 OnResume();
 
-	/**
+	 /**
 	 * Test wheather microphone is available
 	 *
-	 * @return If success return true, means have detect micphone device, failed return false.
+	 * @return if success return 0, means have detect micphone device,failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
 	 */
 	UFUNCTION(BlueprintPure, Category = "Voice Plug-in")
-		bool TestMic();
+		int32 TestMic();
 
 	/**
-	 * Open Microphone
-	 */
+	* Get micphone's volume
+	*
+	* @return micphone's volume , if return value>0, means you have said something capture by micphone
+	*/
+	UFUNCTION(BlueprintPure, Category = "Voice Plug-in")
+		int32 GetMicLevel();
+
+	/**
+	* Open player's micro phone  and begin to send player's voice data.
+	*
+	* @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	* @see : GCloudVoiceErrno
+	*/
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void OpenMic();
+		int32 OpenMic();
 
-	/**
-	 * Close Microphone
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void CloseMic();
-
-	/**
-	 * Open speaker
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void OpenSpeaker();
-
-	/**
-	 * Close speaker
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void CloseSpeaker();
-
-	/**
-	 * Enable a voice client join in multi rooms.
+	 /**
+	 * Close players's micro phone and stop to send player's voice data.
 	 *
-	 * @param bEnable true for open and false for close.
-	 * @return if success return true, failed return false.
+	 * @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		bool EnableMultiRoom(bool bEnable);
+		int32 CloseMic();
+
+	 /**
+	 * Open player's speaker and begin recvie voice data from the net .
+	 *
+	 * @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
+		int32 OpenSpeaker();
+
+	 /**
+	 * Close player's speaker and stop to recive voice data from the net.
+	 *
+	 * @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
+		int32 CloseSpeaker();
 
 	/**
 	 * Set voice client Mic volume
 	 *
 	 * @param vol Windows value range[0,1000].
+	 * @return if success return0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void SetMicVolume(int vol);
+		int32 SetMicVolume(int vol);
 
-	/**
-	 * Set voice client Speaker volume.
+	 /**
+	 * set sepaker's volume
 	 *
-	 * @param vol Android & IOS, value range is 0-800, 100 means original voice volume, 50 means only 1/2 original voice volume,  200 means double original voice volume. Windows value range is 0x0 - 0xFFFF, suggested value bigger than 0xff00, then you can hear you speaker sound
+	 * @param vol setspeakervolume, Android & IOS, value range is 0-800, 100 means original voice volume, 50 means only 1/2 original voice volume, 200 means double original voice volume, Windows value range is 0x0-0xFFFF(65535), suggested value bigger than 0xff00, then you can hear you speaker sound
+	 * @return if success return 0, failed return other errno @see GCloudVoiceErrno
+	 * @see : GCloudVoiceErrno
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void SetSpeakerVolume(int vol);
+		int32 SetSpeakerVolume(int vol);
 
-	/**
-	 * Quit the specify voice room(Do not distinguish team room or National room), if successful, will callback notify OnQuitRoom function
-	 *
-	 * @param RoomName The voice room want to quit
-	 * @param msTimeout time for quit, it is micro second. value range[5000, 60000]
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Plug-in")
-		void QuitRoom(const FString& RoomName, int32 msTimeout);
 private:
 	// The UVoiceClient instance handle (singleton object)
 	static UVoiceClient* VoiceClient;
@@ -207,7 +261,4 @@ private:
 	bool bRoomStatus;
 	// This array storage the voice client has joined room name
 	TArray<FString> JoinedRoomName;
-
-	UPROPERTY(BlueprintAssignable, Category = "Voice Plug-in")
-		FOutputLog OutputLog;
 };
