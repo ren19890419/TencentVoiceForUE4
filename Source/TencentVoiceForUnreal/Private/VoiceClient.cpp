@@ -60,7 +60,7 @@ void UVoiceClient::AddJoinedRoomName(const FString & RoomName)
 
 	if (!JoinedRoomName.Contains(RoomName))
 	{
-		JoinedRoomName.Emplace(RoomName);
+		JoinedRoomName.Add(RoomName);
 
 		UE_LOG(TencentVoicePlugin, Display, TEXT("Joined room name added %s!"), *RoomName);
 	}
@@ -79,6 +79,8 @@ void UVoiceClient::RemoveJoinedRoomName(const FString & RoomName)
 	{
 		CloseMic();
 		CloseSpeaker();
+
+		JoinedRoomName.Empty();
 
 		bRoomStatus = false;
 	}
@@ -124,12 +126,14 @@ void UVoiceClient::SetServerInfo(const FString & ServerAddr)
 
 void UVoiceClient::OnPause()
 {
-	UE_LOG(TencentVoicePlugin, Display, TEXT("OnPause return code %d!"), static_cast<int32>(m_voiceengine->Pause()));
+	//UE_LOG(TencentVoicePlugin, Display, TEXT("OnPause return code %d!"), static_cast<int32>(m_voiceengine->Pause()));
+	OutputLog.Broadcast(FString(TEXT("OnPause:")) + FString::FromInt(static_cast<int32>(m_voiceengine->Pause())));
 }
 
 void UVoiceClient::OnResume()
 {
-	UE_LOG(TencentVoicePlugin, Display, TEXT("OnResume return code %d!"), static_cast<int32>(m_voiceengine->Resume()));
+	//UE_LOG(TencentVoicePlugin, Display, TEXT("OnResume return code %d!"), static_cast<int32>(m_voiceengine->Resume()));
+	OutputLog.Broadcast(FString(TEXT("OnResume:")) + FString::FromInt(static_cast<int32>(m_voiceengine->Resume())));
 }
 
 bool UVoiceClient::SetNotify(UNotifyBase* NotifyInstance)
@@ -184,11 +188,14 @@ void UVoiceClient::JoinNationalRoom(const FString & RoomName, EVoiceMemberRole M
 
 bool UVoiceClient::TestMic()
 {
-	UE_LOG(TencentVoicePlugin, Display, TEXT("MicLevel return code %d!"), m_voiceengine->GetMicLevel(true));
-	UE_LOG(TencentVoicePlugin, Display, TEXT("TestMic return code %d!"), static_cast<int32>(m_voiceengine->TestMic()));
+	GCloudVoiceErrno ErrorCode;
+	ErrorCode = m_voiceengine->TestMic();
+	OutputLog.Broadcast(FString(TEXT("TestMic:")) + FString::FromInt(static_cast<int32>(ErrorCode)));
 
-	if (gcloud_voice::GCLOUD_VOICE_SUCC == m_voiceengine->TestMic())
-	{
+	OutputLog.Broadcast(FString(TEXT("MicLevel:")) + FString::FromInt(static_cast<int32>(m_voiceengine->GetMicLevel(true))));
+
+	if (gcloud_voice::GCLOUD_VOICE_SUCC == ErrorCode)
+	{	
 		return true;
 	}
 	return false;
@@ -196,22 +203,26 @@ bool UVoiceClient::TestMic()
 
 void UVoiceClient::OpenMic()
 {
-	UE_LOG(TencentVoicePlugin, Display, TEXT("OpenMic return code %d!"), static_cast<int32>(m_voiceengine->OpenMic()));
+	//UE_LOG(TencentVoicePlugin, Display, TEXT("OpenMic return code %d!"), static_cast<int32>(m_voiceengine->OpenMic()));
+	OutputLog.Broadcast(FString(TEXT("OpenMic:")) + FString::FromInt(static_cast<int32>(m_voiceengine->OpenMic())));
 }
 
 void UVoiceClient::CloseMic()
 {
-	UE_LOG(TencentVoicePlugin, Display, TEXT("CloseMic return code %d!"), static_cast<int32>(m_voiceengine->CloseMic()));
+	//UE_LOG(TencentVoicePlugin, Display, TEXT("CloseMic return code %d!"), static_cast<int32>(m_voiceengine->CloseMic()));
+	OutputLog.Broadcast(FString(TEXT("CloseMic:")) + FString::FromInt(static_cast<int32>(m_voiceengine->CloseMic())));
 }
 
 void UVoiceClient::OpenSpeaker()
 {
-	UE_LOG(TencentVoicePlugin, Display, TEXT("OpenSpeaker return code %d!"), static_cast<int32>(m_voiceengine->OpenSpeaker()));
+	//UE_LOG(TencentVoicePlugin, Display, TEXT("OpenSpeaker return code %d!"), static_cast<int32>(m_voiceengine->OpenSpeaker()));
+	OutputLog.Broadcast(FString(TEXT("OpenSpeaker:")) + FString::FromInt(static_cast<int32>(m_voiceengine->OpenSpeaker())));
 }
 
 void UVoiceClient::CloseSpeaker()
 {
-	UE_LOG(TencentVoicePlugin, Display, TEXT("CloseSpeaker return code %d!"), static_cast<int32>(m_voiceengine->CloseSpeaker()));
+	//UE_LOG(TencentVoicePlugin, Display, TEXT("CloseSpeaker return code %d!"), static_cast<int32>(m_voiceengine->CloseSpeaker()));
+	OutputLog.Broadcast(FString(TEXT("CloseSpeaker:")) + FString::FromInt(static_cast<int32>(m_voiceengine->CloseSpeaker())));
 }
 
 bool UVoiceClient::EnableMultiRoom(bool bEnable)
@@ -229,26 +240,21 @@ bool UVoiceClient::EnableMultiRoom(bool bEnable)
 
 void UVoiceClient::SetMicVolume(int vol)
 {
-	UE_LOG(TencentVoicePlugin, Display, TEXT("SetMicVolume %d, return code %d!"), vol, static_cast<int32>(m_voiceengine->SetMicVolume(vol)));
+	//UE_LOG(TencentVoicePlugin, Display, TEXT("SetMicVolume %d, return code %d!"), vol, static_cast<int32>(m_voiceengine->SetMicVolume(vol)));
+	OutputLog.Broadcast(FString(TEXT("SetMicVolume:")) + FString::FromInt(vol) + FString(TEXT(":return:")) + FString::FromInt(static_cast<int32>(m_voiceengine->SetMicVolume(vol))));
 }
 
 void UVoiceClient::SetSpeakerVolume(int vol)
 {
-	UE_LOG(TencentVoicePlugin, Display, TEXT("SetSpeakerVolume %d, return code %d!"), vol, static_cast<int32>(m_voiceengine->SetSpeakerVolume(vol)));
+	//UE_LOG(TencentVoicePlugin, Display, TEXT("SetSpeakerVolume %d, return code %d!"), vol, static_cast<int32>(m_voiceengine->SetSpeakerVolume(vol)));
+	OutputLog.Broadcast(FString(TEXT("SetSpeakerVolume:")) + FString::FromInt(static_cast<int32>(m_voiceengine->SetSpeakerVolume(vol))));
 }
 
 void UVoiceClient::QuitRoom(const FString & RoomName, int32 msTimeout)
 {
 	if (JoinedRoomName.Contains(RoomName))
 	{
-		UE_LOG(TencentVoicePlugin, Display, TEXT("UVoiceClient::QuitRoom return code %d!"), static_cast<int32>(m_voiceengine->QuitRoom(TCHAR_TO_ANSI(*RoomName), msTimeout)));
-	}
-}
-
-void UVoiceClient::QuitAllRoom(int32 msTimeout)
-{
-	for (auto& Iterator : JoinedRoomName)
-	{
-		UE_LOG(TencentVoicePlugin, Display, TEXT("UVoiceClient::QuitAllRoom return code %d!"), static_cast<int32>(m_voiceengine->QuitRoom(TCHAR_TO_ANSI(*Iterator), msTimeout)));
+		//UE_LOG(TencentVoicePlugin, Display, TEXT("UVoiceClient::QuitRoom return code %d!"), static_cast<int32>(m_voiceengine->QuitRoom(TCHAR_TO_ANSI(*RoomName), msTimeout)));
+		OutputLog.Broadcast(FString(TEXT("QuitRoom:")) + FString::FromInt(static_cast<int32>(m_voiceengine->QuitRoom(TCHAR_TO_ANSI(*RoomName), msTimeout))));
 	}
 }
