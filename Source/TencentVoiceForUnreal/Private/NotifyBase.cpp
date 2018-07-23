@@ -26,7 +26,7 @@ void UNotifyBase::OnJoinRoom(GCloudVoiceCompleteCode code, const char *roomName,
 		VoiceClient->RemoveJoinedRoomName(FString(ANSI_TO_TCHAR(roomName)));
 	}
 
-	OnJoinRoomCompleted.Broadcast(static_cast<EGCloudVoiceCompleteCode>(code), FString(ANSI_TO_TCHAR(roomName)), static_cast<int32>(memberID));
+	OnJoinRoomCompleted.Broadcast(static_cast<EGCloudVoiceCompleteCode>(code), FString(ANSI_TO_TCHAR(roomName)), memberID);
 }
 
 void UNotifyBase::OnStatusUpdate(GCloudVoiceCompleteCode status, const char *roomName, int memberID)
@@ -45,7 +45,7 @@ void UNotifyBase::OnQuitRoom(GCloudVoiceCompleteCode code, const char *roomName)
 
 void UNotifyBase::OnMemberVoice(const char *roomName, unsigned int member, int status)
 {
-	OnMemberVoiceCompleted.Broadcast(FString(ANSI_TO_TCHAR(roomName)), static_cast<int32>(member), static_cast<int32>(status));
+	OnMemberVoiceCompleted.Broadcast(FString(ANSI_TO_TCHAR(roomName)), member, status);
 }
 
 void UNotifyBase::OnUploadFile(GCloudVoiceCompleteCode code, const char *filePath, const char *fileID)
